@@ -16,3 +16,38 @@ def euler_axis_angle_from_attitude_matrix(A):
     v = np.arccos((A[0,0] + A[1,1] + A[2,2] - 1) / 2)
     e = np.array([A[2,1] - A[1,2], A[2,0] - A[0,2], A[0,1] - A[1,0]])/(2*np.sin(v))
     return e,v
+
+def quaternion_from_euler_axis_angle(e,v):
+    return np.array([e[0]*np.sin(v/2), e[1]*np.sin(v/2), e[2]*np.sin(v/2), np.cos(v/2)])
+
+def quaternion_cross_product_matrix(q):
+    return np.array(
+        [
+            [q[3], q[2], -q[1], q[0]],
+            [-q[2], q[3], q[0], q[1]],
+            [q[1], -q[0], q[3], q[2]],
+            [-q[0], -q[1], -q[2], q[3]]
+        ]
+    )
+
+def quaternion_dot_product_matrix(q):
+    return np.array(
+        [
+            [q[3], -q[2], q[1], q[0]],
+            [q[2], q[3], -q[0], q[1]],
+            [-q[1], q[0], q[3], q[2]],
+            [-q[0], -q[1], -q[2], q[3]]
+        ]
+    )
+
+def inverse_quaternion(q):
+    return np.array([q[0], -q[1], -q[2], -q[3]])/np.dot(q,q)
+
+def attitude_matrix_from_quaternion(q):
+    return np.eye(3)*(q[3]**2 - np.dot(q[0:3],q[0:3])) - 2*q[3]*cross_product_matrix(q[0:3]) + 2*np.dot(q[0:3],np.transpose(q[0:3]))
+
+def quaternion_from_attitude_matrix(A):
+    q = np.zeros(4)
+    q[0:3] = 0.5*np.sqrt(np.trace(A))
+    q[3] = np.sqrt(1 + 2*np.trace(A))
+    return q/np.dot(q,q)
