@@ -47,7 +47,17 @@ def attitude_matrix_from_quaternion(q):
     return np.eye(3)*(q[3]**2 - np.dot(q[0:3],q[0:3])) - 2*q[3]*cross_product_matrix(q[0:3]) + 2*np.dot(q[0:3],np.transpose(q[0:3]))
 
 def quaternion_from_attitude_matrix(A):
-    q = np.zeros(4)
-    q[0:3] = 0.5*np.sqrt(np.trace(A))
-    q[3] = np.sqrt(1 + 2*np.trace(A))
-    return q/np.dot(q,q)
+    return quaternion_from_euler_axis_angle(*euler_axis_angle_from_attitude_matrix(A))
+
+def quaternion_from_euler_angles(roll,pitch,yaw):
+    return quaternion_from_attitude_matrix(attitude_matrix_from_euler_angles(roll,pitch,yaw))
+
+def attitude_matrix_from_euler_angles(roll,pitch,yaw):
+    A321 = np.array(
+        [
+            [np.cos(pitch)*np.cos(roll), np.cos(pitch)*np.sin(roll), -np.sin(pitch)],
+            [-np.cos(yaw)*np.sin(roll)+np.sin(yaw)*np.sin(pitch)*np.cos(roll), np.cos(yaw)*np.cos(roll)+np.sin(yaw)*np.sin(pitch)*np.sin(roll), np.sin(yaw)*np.cos(pitch)],
+            [np.sin(yaw)*np.sin(roll)+np.cos(yaw)*np.sin(pitch)*np.cos(roll), -np.sin(yaw)*np.cos(roll)+np.cos(yaw)*np.sin(pitch)*np.sin(roll), np.cos(yaw)*np.cos(pitch)]
+        ]
+    )
+    return A321
